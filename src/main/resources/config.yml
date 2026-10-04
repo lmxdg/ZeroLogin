@@ -1,0 +1,42 @@
+# ============================================================
+#  ZeroLogin 配置
+#  兼容 Minecraft 1.20 ~ 26.1.2
+# ============================================================
+
+# 界面语言：zh_cn / en_us
+language: zh_cn
+
+storage:
+  # 账号数据后端：file（本地文件）
+  type: file
+
+security:
+  # PBKDF2-HMAC-SHA256 迭代次数，越大越安全、登录/注册越慢
+  pbkdf2-iterations: 120000
+  # 密码最短/最长长度
+  min-password-length: 6
+  max-password-length: 32
+  # 密码最长尝试次数，超过后踢出；0 = 不限制
+  max-login-attempts: 3
+  # 未认证时必须在多少秒内完成登录/注册，否则踢出；0 = 不限制
+  login-timeout-seconds: 60
+  # 是否要求密码必须包含字母和数字
+  require-mixed: false
+
+session:
+  # 记住登录状态的秒数：同一 IP 在该时间内重进无需再登录；0 = 关闭
+  remember-seconds: 300
+  # 是否允许基于 IP 的自动登录（配合 /ip 命令）
+  ip-auto-login: true
+
+protection:
+  # 未认证时是否冻结移动
+  freeze-movement: true
+  # 未认证时允许执行的命令（不含斜杠，小写）
+  allowed-commands:
+    - login
+    - l
+    - register
+    - reg
+
+messages-prefix: "&8[&bZeroLogin&8] "

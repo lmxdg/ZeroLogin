@@ -32,8 +32,8 @@ commands:
     aliases: [changepw, cpw]
   zerologin:
     description: ZeroLogin 管理命令
-    usage: /zerologin <reload|info|stats| unload|forcereset> [args]
-    aliases: [zl, zerologin:admin]
+    usage: /zerologin <reload|info|stats> [args]
+    aliases: [zl]
     permission: zerologin.admin
 
 permissions:
