@@ -1,0 +1,55 @@
+# api-version 使用兼容性下限 1.20。
+# Paper 对 api-version 采用“小于等于当前服务端版本即允许加载”的规则，
+# 因此声明 1.20 即可同时被 1.20 与 26.x 服务端加载。
+api-version: '1.20'
+name: ZeroLogin
+main: dev.zerologin.ZeroLoginPlugin
+version: '${project.version}'
+description: ${project.description}
+author: lmxdg
+website: ${project.url}
+folia-supported: false
+
+commands:
+  login:
+    description: 登录服务器
+    usage: /login <密码>
+    aliases: [l]
+  register:
+    description: 注册账号
+    usage: /register <密码> <密码>
+    aliases: [reg]
+  unregister:
+    description: 注销账号（需先登录）
+    usage: /unregister <当前密码>
+    aliases: [unreg]
+  ip:
+    description: 查看或管理自动登录 IP
+    usage: /ip <add|remove|list|clear> [ip]
+  changepassword:
+    description: 修改密码（需先登录）
+    usage: /changepassword <旧密码> <新密码>
+    aliases: [changepw, cpw]
+  zerologin:
+    description: ZeroLogin 管理命令
+    usage: /zerologin <reload|info|stats| unload|forcereset> [args]
+    aliases: [zl, zerologin:admin]
+    permission: zerologin.admin
+
+permissions:
+  zerologin.*:
+    description: ZeroLogin 所有权限
+    default: op
+    children:
+      zerologin.admin: true
+      zerologin.bypass: true
+      zerologin.ip: true
+  zerologin.admin:
+    description: 使用 /zerologin 管理命令
+    default: op
+  zerologin.bypass:
+    description: 免登陆，进入服务器后无需认证
+    default: false
+  zerologin.ip:
+    description: 使用 /ip 管理自己的自动登录 IP
+    default: true
