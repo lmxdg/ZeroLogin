@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.zerologin</groupId>
+  <artifactId>zerologin</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>ZeroLogin</name>
+  <description>新一代轻量级 Minecraft 登录插件，单 JAR 兼容 Minecraft 1.20 至 26.1.2</description>
+  <url>https://github.com/lmxdg/ZeroLogin</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- 字节码目标固定为 Java 17：MC 1.20 需 Java 17，MC 26.x 运行于 Java 25，
+         低版本字节码在高版本 JVM 上可直接运行，因此单个 JAR 覆盖全矩阵。 -->
+    <maven.compiler.release>17</maven.compiler.release>
+
+    <!-- 默认对齐兼容性下限（Minecraft 1.20.1）。
+         运行 `mvn -Papi-latest` 时切换为 26.1.2，用于双向兼容性门禁验证。 -->
+    <paper.api.version>1.20.1-R0.1-SNAPSHOT</paper.api.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>papermc</id>
+      <url>https://repo.papermc.io/repository/maven-public/</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+      <version>${paper.api.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${project.name}-${project.version}</finalName>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>plugin.yml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>plugin.yml</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>${maven.compiler.release}</release>
+          <compilerArgs>
+            <arg>-Xlint:all,-processing,-serial,-this-escape</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- 兼容性门禁：针对最新 API（Minecraft 26.1.2，Java 25 字节码的 API 包）重新编译同一份源码。
+         只有当源码仅使用两个端点 API 的交集时，该 Profile 才会编译成功。 -->
+    <profile>
+      <id>api-latest</id>
+      <properties>
+        <paper.api.version>26.1.2.build.74-stable</paper.api.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>api-1202</id>
+      <properties>
+        <paper.api.version>1.20.2-R0.1-SNAPSHOT</paper.api.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>api-12111</id>
+      <properties>
+        <paper.api.version>1.21.11-R0.1-SNAPSHOT</paper.api.version>
+      </properties>
+    </profile>
+  </profiles>
+</project>
