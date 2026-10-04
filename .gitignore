@@ -1,5 +1,6 @@
 # 本地开发与构建产物
 .dev/
 target/
+dist/
 *.class
 *.log
