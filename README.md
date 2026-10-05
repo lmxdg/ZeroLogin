@@ -97,7 +97,7 @@ ZeroLogin 为离线模式（`online-mode=false`）服务器提供账号注册与
 
 ### 方式一：下载成品（推荐）
 
-1. 前往 [Releases](https://github.com/lmxdg/ZeroLogin/releases) 下载最新版 `ZeroLogin1.0.jar`
+1. 前往 [Releases](https://github.com/lmxdg/ZeroLogin/releases) 下载最新版 `ZeroLogin.jar`
 2. 将 JAR 放入服务端的 `plugins/` 目录
 3. 重启服务端
 4. 首次启动后，配置与语言文件会生成在 `plugins/ZeroLogin/`
