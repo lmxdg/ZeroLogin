@@ -109,11 +109,15 @@ class SqliteAuthStoreTest {
             assertNotNull(store.loadByName("STEVE").join());
             assertNull(store.loadByName("alex").join());
 
-            // 模拟玩家改名：按新名字能查到，并且落盘更新
-            AuthRecord renamed = store.loadByName("Notch").join();
+            // 模拟玩家改名：同 UUID 换名字保存后，按新名字可查、旧名字消失
+            AuthRecord renamed = store.loadByUuid(uuid).join();
             assertNotNull(renamed);
-            assertEquals("Notch", renamed.name());
+            renamed.name("Notch");
+            store.save(renamed).join();
+
             assertEquals("Notch", store.loadByUuid(uuid).join().name());
+            assertNotNull(store.loadByName("Notch").join());
+            assertNull(store.loadByName("Steve").join(), "改名后旧名字不应再命中");
         } finally {
             store.close();
         }

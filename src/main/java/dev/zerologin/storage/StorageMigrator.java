@@ -68,7 +68,7 @@ public final class StorageMigrator {
                 return CompletableFuture.completedFuture(
                         new Result(Status.TARGET_NOT_EMPTY, 0, 0, existing.size(), null));
             }
-            Path backup = null;
+            Path backup;
             if (!existing.isEmpty()) {
                 try {
                     backup = backupToText(dataFolder, existing);
@@ -76,6 +76,8 @@ public final class StorageMigrator {
                     logger.warning("迁移前备份失败：" + ex.getMessage());
                     return failed(ex);
                 }
+            } else {
+                backup = null;
             }
             Map<String, UUID> targetNames = new HashMap<>();
             for (AuthRecord record : existing) {
@@ -91,8 +93,10 @@ public final class StorageMigrator {
                 }
                 toWrite.add(record);
             }
+            final Path backupDir = backup;
+            final int skipped = conflicts;
             return writeAll(target, toWrite)
-                    .thenApply(v -> new Result(Status.OK, toWrite.size(), conflicts, existing.size(), backup));
+                    .thenApply(v -> new Result(Status.OK, toWrite.size(), skipped, existing.size(), backupDir));
         }));
     }
 
