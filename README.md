@@ -481,7 +481,7 @@ A：暂不支持。`plugin.yml` 中已声明 `folia-supported: false`。
 A：默认（SQLite）后端下执行 `DELETE FROM accounts WHERE name_lc = '<玩家名小写>'`（停止服务端后操作，或先 `/zerologin stats` 确认 UUID）。若使用 `file` 后端，删除 `plugins/ZeroLogin/accounts/<该玩家UUID>.txt` 即可。两种方式都会丢失该账号的 IP 白名单等数据，玩家下次进入需重新注册。
 
 **Q：怎么切换到 SQLite / 换回文件存储？**
-A：改 `storage.type` 后执行 `/zerologin reload` 不会切换存储（存储后端需重启才生效）。正确做法：停止服务端 → `/zerologin migrate <当前的后端> <目标后端>` 迁移数据 → 修改 `storage.type` → 启动服务端。
+A：改 `storage.type` 后执行 `/zerologin reload` 不会切换存储（存储后端需重启才生效）。正确做法：在运行中的服务端执行 `/zerologin migrate <当前的后端> <目标后端>` 迁移数据 → 停止服务端 → 修改 `storage.type` → 启动服务端。建议在低峰期操作，避免迁移后又写入旧后端。
 
 **Q：为什么改了 `storage.type` 重启后账号是空的？**
 A：说明新后端里还没有数据。执行 `/zerologin migrate <旧后端> <新后端>` 导入即可；若目标后端已有数据，命令会中止以防覆盖，确认无误后加 `force`。
