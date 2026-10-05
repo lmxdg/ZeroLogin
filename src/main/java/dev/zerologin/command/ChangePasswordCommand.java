@@ -1,6 +1,7 @@
 package dev.zerologin.command;
 
 import dev.zerologin.ZeroLoginPlugin;
+import dev.zerologin.locale.Messages;
 import dev.zerologin.storage.AuthRecord;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,16 +19,17 @@ public final class ChangePasswordCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Messages m = plugin.messagesFor(sender);
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.messages().get("only-player"));
+            sender.sendMessage(m.get("only-player"));
             return true;
         }
         if (!plugin.sessions().isAuthenticated(player.getUniqueId())) {
-            player.sendMessage(plugin.messages().get("not-logged-in"));
+            player.sendMessage(m.get("not-logged-in"));
             return true;
         }
         if (args.length != 2) {
-            player.sendMessage(plugin.messages().get("usage-changepassword"));
+            player.sendMessage(m.get("usage-changepassword"));
             return true;
         }
         String oldPw = args[0];
@@ -35,22 +37,22 @@ public final class ChangePasswordCommand implements CommandExecutor {
 
         var check = plugin.auth().validatePassword(newPw);
         if (check != dev.zerologin.auth.AuthService.PasswordCheck.OK) {
-            player.sendMessage(plugin.messages().get("register-weak"));
+            player.sendMessage(m.get("register-weak"));
             return true;
         }
 
         plugin.store().loadByUuid(player.getUniqueId()).thenAccept(record -> {
             if (record == null) {
-                player.sendMessage(plugin.messages().get("not-registered"));
+                player.sendMessage(m.get("not-registered"));
                 return;
             }
             if (!plugin.auth().verify(oldPw, record.passwordHash())) {
-                player.sendMessage(plugin.messages().get("changepassword-wrong-old"));
+                player.sendMessage(m.get("changepassword-wrong-old"));
                 return;
             }
             record.passwordHash(plugin.auth().hash(newPw));
             plugin.store().save(record).thenRun(() ->
-                    player.sendMessage(plugin.messages().get("changepassword-success")));
+                    player.sendMessage(m.get("changepassword-success")));
         });
         return true;
     }

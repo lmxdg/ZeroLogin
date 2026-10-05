@@ -3,12 +3,22 @@
 #  兼容 Minecraft 1.20 ~ 26.1.2
 # ============================================================
 
-# 界面语言：zh_cn / en_us
-language: zh_cn
+# 界面语言：auto（跟随每位玩家的客户端语言）
+# 也可强制指定：en_us / zh_cn / zh_tw / ja_jp / ko_kr / ru_ru / es_es
+# auto 时，控制台与无法识别的客户端语言回退到 en_us
+language: auto
 
 storage:
-  # 账号数据后端：file（本地文件）
-  type: file
+  # 账号数据后端：sqlite（推荐）或 file（v1.0 的本地文本文件）
+  # 首次切到 sqlite 且数据库为空时，会自动导入 file 后端的旧数据（非破坏式）
+  # 手动迁移可用 /zerologin migrate <from> <to> [force]
+  type: sqlite
+
+  sqlite:
+    # 数据库文件名，位于插件数据目录 plugins/ZeroLogin/ 下
+    file: zerologin.db
+    # 数据库为空时是否自动导入 file 后端的账号数据
+    import-file: true
 
 security:
   # PBKDF2-HMAC-SHA256 迭代次数，越大越安全、登录/注册越慢

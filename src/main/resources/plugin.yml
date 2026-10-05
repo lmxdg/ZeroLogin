@@ -31,8 +31,8 @@ commands:
     usage: /changepassword <旧密码> <新密码>
     aliases: [changepw, cpw]
   zerologin:
-    description: ZeroLogin 管理命令
-    usage: /zerologin <reload|info|stats> [args]
+    description: ZeroLogin 管理命令（重载、信息、统计、存储迁移、语言模板）
+    usage: /zerologin <reload|info|stats|migrate|lang-template> [args]
     aliases: [zl]
     permission: zerologin.admin
 

@@ -83,14 +83,14 @@ public final class AuthListener implements Listener {
                         rec.incrementLoginCount();
                         plugin.store().save(rec);
                     }
-                    player.sendMessage(plugin.messages().get("auto-login"));
+                    player.sendMessage(plugin.messagesFor(player).get("auto-login"));
                 });
             } else {
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     if (record == null) {
-                        player.sendMessage(plugin.messages().get("must-register"));
+                        player.sendMessage(plugin.messagesFor(player).get("must-register"));
                     } else {
-                        player.sendMessage(plugin.messages().get("must-login"));
+                        player.sendMessage(plugin.messagesFor(player).get("must-login"));
                     }
                     startTimeout(player);
                 });
@@ -107,7 +107,7 @@ public final class AuthListener implements Listener {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             Player online = plugin.getServer().getPlayer(uuid);
             if (online != null && online.isOnline() && !authed(online)) {
-                online.kickPlayer(plugin.messages().raw("kicked-timeout", null));
+                online.kickPlayer(plugin.messagesFor(online).raw("kicked-timeout", null));
             }
         }, seconds * 20L);
     }
@@ -143,12 +143,14 @@ public final class AuthListener implements Listener {
         String root = AuthService.rootCommand(event.getMessage());
         if (!plugin.settings().isCommandAllowed(root)) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage(plugin.messages().get("command-blocked"));
+            Player player = event.getPlayer();
+            player.sendMessage(plugin.messagesFor(player).get("command-blocked"));
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
+        // 异步线程：不做文件读取，使用固定语言的消息实例
         if (!authed(event.getPlayer())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(plugin.messages().get("action-blocked"));

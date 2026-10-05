@@ -2,6 +2,7 @@ package dev.zerologin.command;
 
 import dev.zerologin.ZeroLoginPlugin;
 import dev.zerologin.listener.AuthListener;
+import dev.zerologin.locale.Messages;
 import dev.zerologin.storage.AuthRecord;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -28,16 +29,17 @@ public final class LoginCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Messages m = plugin.messagesFor(sender);
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.messages().get("only-player"));
+            sender.sendMessage(m.get("only-player"));
             return true;
         }
         if (plugin.sessions().isAuthenticated(player.getUniqueId())) {
-            player.sendMessage(plugin.messages().get("already-logged-in"));
+            player.sendMessage(m.get("already-logged-in"));
             return true;
         }
         if (args.length != 1) {
-            player.sendMessage(plugin.messages().get("usage-login"));
+            player.sendMessage(m.get("usage-login"));
             return true;
         }
         String password = args[0];
@@ -46,7 +48,7 @@ public final class LoginCommand implements CommandExecutor {
 
         plugin.store().loadByUuid(player.getUniqueId()).thenAccept(record -> {
             if (record == null) {
-                player.sendMessage(plugin.messages().get("not-registered"));
+                player.sendMessage(m.get("not-registered"));
                 return;
             }
             if (!plugin.auth().verify(password, record.passwordHash())) {
@@ -55,10 +57,10 @@ public final class LoginCommand implements CommandExecutor {
                         : listener.decrementAttempts(player.getUniqueId());
                 if (plugin.settings().maxLoginAttempts() > 0 && left < 0) {
                     plugin.getServer().getScheduler().runTask(plugin,
-                            () -> player.kickPlayer(plugin.messages().raw("kicked-too-many-attempts", null)));
+                            () -> player.kickPlayer(m.raw("kicked-too-many-attempts", null)));
                     return;
                 }
-                player.sendMessage(plugin.messages().get("login-wrong-password",
+                player.sendMessage(m.get("login-wrong-password",
                         Map.of("left", String.valueOf(Math.max(0, left)))));
                 return;
             }
@@ -77,7 +79,7 @@ public final class LoginCommand implements CommandExecutor {
             final String fip = ip;
             plugin.store().save(rec).thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
                 plugin.sessions().authenticate(player.getUniqueId(), fip);
-                player.sendMessage(plugin.messages().get("login-success"));
+                player.sendMessage(m.get("login-success"));
             }));
         });
         return true;

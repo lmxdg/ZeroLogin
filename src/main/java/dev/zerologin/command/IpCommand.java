@@ -1,6 +1,7 @@
 package dev.zerologin.command;
 
 import dev.zerologin.ZeroLoginPlugin;
+import dev.zerologin.locale.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,63 +23,64 @@ public final class IpCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Messages m = plugin.messagesFor(sender);
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.messages().get("only-player"));
+            sender.sendMessage(m.get("only-player"));
             return true;
         }
         if (!player.hasPermission("zerologin.ip")) {
-            player.sendMessage(plugin.messages().get("no-permission"));
+            player.sendMessage(m.get("no-permission"));
             return true;
         }
         if (args.length < 1) {
-            player.sendMessage(plugin.messages().get("usage-ip"));
+            player.sendMessage(m.get("usage-ip"));
             return true;
         }
         plugin.store().loadByUuid(player.getUniqueId()).thenAccept(record -> {
             if (record == null) {
-                player.sendMessage(plugin.messages().get("not-registered"));
+                player.sendMessage(m.get("not-registered"));
                 return;
             }
             String sub = args[0].toLowerCase();
             switch (sub) {
                 case "add" -> {
                     if (args.length < 2) {
-                        player.sendMessage(plugin.messages().get("usage-ip"));
+                        player.sendMessage(m.get("usage-ip"));
                         return;
                     }
                     if (record.autoLoginIps().size() >= MAX_IPS) {
-                        player.sendMessage(plugin.messages().get("ip-limit"));
+                        player.sendMessage(m.get("ip-limit"));
                         return;
                     }
                     String ip = record.normalizeIp(args[1]);
                     if (record.addAutoLoginIp(ip)) {
                         plugin.store().save(record).thenRun(() ->
-                                player.sendMessage(plugin.messages().get("ip-added", Map.of("ip", ip))));
+                                player.sendMessage(m.get("ip-added", Map.of("ip", ip))));
                     } else {
-                        player.sendMessage(plugin.messages().get("ip-added", Map.of("ip", ip)));
+                        player.sendMessage(m.get("ip-added", Map.of("ip", ip)));
                     }
                 }
                 case "remove" -> {
                     if (args.length < 2) {
-                        player.sendMessage(plugin.messages().get("usage-ip"));
+                        player.sendMessage(m.get("usage-ip"));
                         return;
                     }
                     String ip = record.normalizeIp(args[1]);
                     if (record.removeAutoLoginIp(ip)) {
                         plugin.store().save(record).thenRun(() ->
-                                player.sendMessage(plugin.messages().get("ip-removed", Map.of("ip", ip))));
+                                player.sendMessage(m.get("ip-removed", Map.of("ip", ip))));
                     } else {
-                        player.sendMessage(plugin.messages().get("ip-removed", Map.of("ip", ip)));
+                        player.sendMessage(m.get("ip-removed", Map.of("ip", ip)));
                     }
                 }
-                case "list" -> player.sendMessage(plugin.messages().get("ip-list",
+                case "list" -> player.sendMessage(m.get("ip-list",
                         Map.of("ips", record.autoLoginIps().isEmpty() ? "-" : String.join(", ", record.autoLoginIps()))));
                 case "clear" -> {
                     record.clearAutoLoginIps();
                     plugin.store().save(record).thenRun(() ->
-                            player.sendMessage(plugin.messages().get("ip-cleared")));
+                            player.sendMessage(m.get("ip-cleared")));
                 }
-                default -> player.sendMessage(plugin.messages().get("usage-ip"));
+                default -> player.sendMessage(m.get("usage-ip"));
             }
         });
         return true;

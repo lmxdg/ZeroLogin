@@ -227,6 +227,24 @@ public final class Messages {
         return colorize(raw);
     }
 
+    /**
+     * 读取 JAR 内置语言文件的原始文本，供 {@code /zerologin lang-template} 导出模板。
+     *
+     * @return 内置内容；资源不存在时返回 {@code null}
+     */
+    public static String builtinContent(JavaPlugin plugin, String language) {
+        String name = "messages_" + normalize(language) + ".yml";
+        try (InputStream in = plugin.getResource(name)) {
+            if (in == null) {
+                return null;
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception ex) {
+            plugin.getLogger().warning("读取内置语言文件失败 " + name + ": " + ex.getMessage());
+            return null;
+        }
+    }
+
     /** 将文本写入数据目录，便于管理员提取模板自行翻译。 */
     public static void dumpTemplate(JavaPlugin plugin, String language, String content) {
         try {
@@ -234,11 +252,16 @@ public final class Messages {
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 return;
             }
-            java.nio.file.Files.writeString(new File(dir, "messages_" + language + ".yml").toPath(),
+            java.nio.file.Files.writeString(new File(dir, "messages_" + normalize(language) + ".yml").toPath(),
                     content, StandardCharsets.UTF_8);
         } catch (Exception ignored) {
             // 写模板失败不影响功能，调用方只把它当作便利特性。
         }
+    }
+
+    /** 模板/自定义语言文件在数据目录中的位置（提示管理员用）。 */
+    public static String templatePath(JavaPlugin plugin, String language) {
+        return new File(plugin.getDataFolder(), "messages_" + normalize(language) + ".yml").getPath();
     }
 
     /** 把 & 颜色代码转换为 §。 */

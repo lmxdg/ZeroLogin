@@ -6,7 +6,6 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -196,22 +195,9 @@ public final class FileAuthStore implements AuthStore {
     }
 
     private void write(AuthRecord record) throws IOException {
-        Map<String, String> fields = new LinkedHashMap<>();
-        fields.put("schema", "1");
-        fields.put("uuid", record.uuid().toString());
-        fields.put("name", record.name());
-        fields.put("password", record.passwordHash());
-        fields.put("registered-at", Long.toString(record.registeredAt()));
-        fields.put("last-login-at", Long.toString(record.lastLoginAt()));
-        fields.put("last-seen-at", Long.toString(record.lastSeenAt()));
-        fields.put("login-count", Integer.toString(record.loginCount()));
-        if (!record.autoLoginIps().isEmpty()) {
-            fields.put("auto-login-ips", String.join(",", record.autoLoginIps()));
-        }
-
         Path target = baseDir.resolve(record.uuid() + EXT);
         Path tmp = baseDir.resolve(record.uuid() + EXT + ".tmp");
-        Files.writeString(tmp, AccountCodec.serialize(fields), StandardCharsets.UTF_8);
+        Files.writeString(tmp, AccountCodec.serialize(AccountCodec.toFields(record)), StandardCharsets.UTF_8);
         try {
             Files.move(tmp, target,
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING,
@@ -225,49 +211,7 @@ public final class FileAuthStore implements AuthStore {
         if (!Files.isRegularFile(file)) {
             return null;
         }
-        String content = Files.readString(file, StandardCharsets.UTF_8);
-        Map<String, String> fields = AccountCodec.deserialize(content);
-        if (fields == null) {
-            return null;
-        }
-        try {
-            String uuidText = fields.get("uuid");
-            String password = fields.get("password");
-            if (uuidText == null || password == null || password.isEmpty()) {
-                return null;
-            }
-            UUID uuid = UUID.fromString(uuidText);
-            String name = fields.getOrDefault("name", uuid.toString());
-            AuthRecord record = new AuthRecord(uuid, name, password, parseLong(fields.get("registered-at")));
-            record.lastLoginAt(parseLong(fields.get("last-login-at")));
-            record.lastSeenAt(parseLong(fields.get("last-seen-at")));
-            int count = (int) parseLong(fields.get("login-count"));
-            for (int i = 0; i < count; i++) {
-                record.incrementLoginCount();
-            }
-            String ips = fields.get("auto-login-ips");
-            if (ips != null && !ips.isEmpty()) {
-                for (String ip : ips.split(",")) {
-                    if (!ip.isEmpty()) {
-                        record.addAutoLoginIp(ip);
-                    }
-                }
-            }
-            return record;
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
-    }
-
-    private static long parseLong(String s) {
-        if (s == null || s.isEmpty()) {
-            return 0L;
-        }
-        try {
-            return Long.parseLong(s);
-        } catch (NumberFormatException ex) {
-            return 0L;
-        }
+        return AccountCodec.fromFields(AccountCodec.deserialize(Files.readString(file, StandardCharsets.UTF_8)));
     }
 
     private static String key(String name) {

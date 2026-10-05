@@ -2,6 +2,7 @@ package dev.zerologin.command;
 
 import dev.zerologin.ZeroLoginPlugin;
 import dev.zerologin.auth.AuthService;
+import dev.zerologin.locale.Messages;
 import dev.zerologin.storage.AuthRecord;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -21,37 +22,38 @@ public final class RegisterCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Messages m = plugin.messagesFor(sender);
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.messages().get("only-player"));
+            sender.sendMessage(m.get("only-player"));
             return true;
         }
         if (plugin.sessions().isAuthenticated(player.getUniqueId())) {
-            player.sendMessage(plugin.messages().get("already-logged-in"));
+            player.sendMessage(m.get("already-logged-in"));
             return true;
         }
         if (args.length != 2) {
-            player.sendMessage(plugin.messages().get("usage-register"));
+            player.sendMessage(m.get("usage-register"));
             return true;
         }
         if (!args[0].equals(args[1])) {
-            player.sendMessage(plugin.messages().get("register-mismatch"));
+            player.sendMessage(m.get("register-mismatch"));
             return true;
         }
         String password = args[0];
         AuthService.PasswordCheck check = plugin.auth().validatePassword(password);
         switch (check) {
             case TOO_SHORT -> {
-                player.sendMessage(plugin.messages().get("register-too-short",
+                player.sendMessage(m.get("register-too-short",
                         Map.of("min", String.valueOf(plugin.auth().minLength()))));
                 return true;
             }
             case TOO_LONG -> {
-                player.sendMessage(plugin.messages().get("register-too-long",
+                player.sendMessage(m.get("register-too-long",
                         Map.of("max", String.valueOf(plugin.auth().maxLength()))));
                 return true;
             }
             case WEAK -> {
-                player.sendMessage(plugin.messages().get("register-weak"));
+                player.sendMessage(m.get("register-weak"));
                 return true;
             }
             default -> {
@@ -60,7 +62,7 @@ public final class RegisterCommand implements CommandExecutor {
 
         plugin.store().loadByUuid(player.getUniqueId()).thenAccept(existing -> {
             if (existing != null) {
-                player.sendMessage(plugin.messages().get("already-registered"));
+                player.sendMessage(m.get("already-registered"));
                 return;
             }
             String hash = plugin.auth().hash(password);
@@ -76,7 +78,7 @@ public final class RegisterCommand implements CommandExecutor {
             }
             plugin.store().save(record).thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> {
                 plugin.sessions().authenticate(player.getUniqueId(), ip);
-                player.sendMessage(plugin.messages().get("register-success"));
+                player.sendMessage(m.get("register-success"));
             }));
         });
         return true;

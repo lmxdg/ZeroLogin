@@ -12,6 +12,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 public record Settings(
         String language,
         String storageType,
+        String sqliteFile,
+        boolean sqliteImportFile,
         int pbkdf2Iterations,
         int minPasswordLength,
         int maxPasswordLength,
@@ -26,8 +28,10 @@ public record Settings(
 
     public static Settings from(FileConfiguration c) {
         return new Settings(
-                c.getString("language", "zh_cn"),
-                c.getString("storage.type", "file"),
+                c.getString("language", "auto"),
+                c.getString("storage.type", "sqlite"),
+                c.getString("storage.sqlite.file", "zerologin.db"),
+                c.getBoolean("storage.sqlite.import-file", true),
                 Math.max(1000, c.getInt("security.pbkdf2-iterations", 120000)),
                 Math.max(1, c.getInt("security.min-password-length", 6)),
                 Math.max(1, c.getInt("security.max-password-length", 32)),
