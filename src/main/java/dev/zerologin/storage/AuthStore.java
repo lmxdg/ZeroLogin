@@ -1,5 +1,6 @@
 package dev.zerologin.storage;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,6 +32,13 @@ public interface AuthStore {
     CompletableFuture<Boolean> deleteByUuid(UUID uuid);
 
     CompletableFuture<Integer> countAccounts();
+
+    /**
+     * 读取全部账号，用于后端之间的数据迁移。
+     *
+     * <p>账号量级为服务器规模，可全量载入；实现应尽量在一次遍历内完成。
+     */
+    CompletableFuture<List<AuthRecord>> loadAll();
 
     /** 打开连接/加载缓存，在服务端启用阶段调用。失败时抛出运行时异常。 */
     void open() throws Exception;

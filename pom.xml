@@ -6,7 +6,7 @@
 
   <groupId>dev.zerologin</groupId>
   <artifactId>zerologin</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
 
   <name>ZeroLogin</name>
@@ -37,6 +37,14 @@
       <artifactId>paper-api</artifactId>
       <version>${paper.api.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- SQLite 驱动：经 shade 内联并 relocate 到 dev.zerologin.libs.sqlite，
+         避免与服务端里其他插件携带的 sqlite-jdbc 版本冲突。 -->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.50.3.0</version>
     </dependency>
 
     <dependency>
@@ -86,6 +94,40 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.4.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <relocations>
+                <relocation>
+                  <pattern>org.sqlite</pattern>
+                  <shadedPattern>dev.zerologin.libs.sqlite</shadedPattern>
+                </relocation>
+              </relocations>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -163,6 +164,25 @@ public final class FileAuthStore implements AuthStore {
     @Override
     public CompletableFuture<Integer> countAccounts() {
         return CompletableFuture.completedFuture(cache.size());
+    }
+
+    @Override
+    public CompletableFuture<List<AuthRecord>> loadAll() {
+        List<AuthRecord> out = new ArrayList<>();
+        try (var stream = Files.list(baseDir)) {
+            var files = stream.filter(p -> p.getFileName().toString().endsWith(EXT)).toList();
+            for (Path file : files) {
+                AuthRecord record = read(file);
+                if (record == null) {
+                    continue;
+                }
+                index(record);
+                out.add(record);
+            }
+            return CompletableFuture.completedFuture(out);
+        } catch (IOException ex) {
+            return failed(ex);
+        }
     }
 
     /** 当前已缓存的账号数，用于测试与诊断。 */
