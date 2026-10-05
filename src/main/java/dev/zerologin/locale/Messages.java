@@ -156,7 +156,7 @@ public final class Messages {
             if (in == null) {
                 return Map.of();
             }
-            return parse(new InputStreamReader(in, StandardCharsets.UTF_8));
+            return parse(new String(in.readAllBytes(), StandardCharsets.UTF_8));
         } catch (Exception ex) {
             plugin.getLogger().warning("读取语言文件失败 " + name + ": " + ex.getMessage());
             return Map.of();

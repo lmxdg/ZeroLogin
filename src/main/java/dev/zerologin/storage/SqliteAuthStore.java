@@ -229,30 +229,6 @@ public final class SqliteAuthStore implements AuthStore {
         });
     }
 
-    /** 批量读取 {@code name_lc} 在集合中的行，迁移时一次性检测所有名字冲突。 */
-    public CompletableFuture<List<AuthRecord>> loadByNameKeys(Collection<String> lowerNames) {
-        if (lowerNames.isEmpty()) {
-            return CompletableFuture.completedFuture(List.of());
-        }
-        return submit(() -> {
-            List<AuthRecord> out = new ArrayList<>();
-            String placeholders = String.join(",", java.util.Collections.nCopies(lowerNames.size(), "?"));
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "SELECT * FROM accounts WHERE name_lc IN (" + placeholders + ")")) {
-                int i = 1;
-                for (String name : lowerNames) {
-                    ps.setString(i++, name);
-                }
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        out.add(map(rs));
-                    }
-                }
-            }
-            return out;
-        });
-    }
-
     // ===== 内部实现 =====
 
     /** 把一段抛异常的数据库操作包装成异步任务，统一在 IO 线程上串行执行。 */
